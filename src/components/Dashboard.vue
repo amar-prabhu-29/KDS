@@ -1,7 +1,6 @@
 <template>
     <div>
-        <h1>Welcome To KDS</h1>
-        <p v-for="order in orders" v-bind:key="order.OrderID">{{order}}</p>
+        <Cards v-bind:orders="orders"></Cards>
     </div>
 
 </template>
@@ -9,6 +8,7 @@
 <script>
 import firebase from 'firebase'
 import firebaseApp from './firebaseInit'
+import Cards from './Cards'
 
 export default {
     name: 'dashboard',
@@ -20,6 +20,9 @@ export default {
         },
     methods:{
 
+    },
+    components : {
+        Cards
     },
     created() {
         var database = firebaseApp.database().ref('Location/WoUc2HdIJePYcpztRB9j/')
