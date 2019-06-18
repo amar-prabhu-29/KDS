@@ -1,5 +1,11 @@
 <template>
-<div class="row">
+    <div>
+        <nav>
+            <div class="nav-wrapper teal">
+                <router-link to="/" class="brand-logo">KDS</router-link>
+            </div>
+        </nav>
+        <div class="row">
             <div class="col l3"></div>
             <div class="col l6 m12 s12">
                 <div class="card-panel hoverable" style="margin:auto">
@@ -24,6 +30,7 @@
             </div>
             <div class="col l3"></div>
         </div>
+    </div>
 </template>
 
 <script>

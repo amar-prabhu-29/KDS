@@ -1,14 +1,12 @@
 <template>
     <nav>
         <div class="nav-wrapper teal">
-            <div class="container">
                 <router-link to="/" class="brand-logo">KDS</router-link>
                 <ul class="right">
                     <li v-if="isLoggedIn"><span class="white-text" style="padding-right:5px">Welcome, {{currentUser}}</span></li>
                     <li v-if="isLoggedIn"><button class="btn black" v-on:click="logout">Logout</button></li>
                 </ul>
             </div>
-        </div>
     </nav>
 </template>
 
@@ -20,6 +18,7 @@ export default {
     name: 'Navbar',
     data: function(){
         return{
+            kitchen: '',
             isLoggedIn : false,
             currentUser : false
         }
@@ -37,5 +36,11 @@ export default {
         }
     }
 }
-
+Vue.component('basic-select', {
+  template:`
+<select>
+  <slot></slot>
+</select>
+`
+});
 </script>
