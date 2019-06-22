@@ -2,28 +2,39 @@
     <div>
         <div class="navbar-fixed">
             <nav>
-                <div class="nav-wrapper teal">
-                    <a href="#!" class="brand-logo"></a>
+                <div class="nav-wrapper #CB212E">
+                    <ul class="left">
+                        <li v-if="notify"><a class="waves-effect waves-light btn grey darken-4" v-on:click="toggleNotification()"><i class="material-icons">volume_up</i></a></li>
+                        <li v-if="!notify"><a class="waves-effect waves-light btn grey darken-4" v-on:click="toggleNotification()"><i class="material-icons">volume_off</i></a></li>
+                        <li>
+                            <select class="browser-default white-text transparent" v-model="kitchenSelect" v-on:change="filterKitchen()" style="margin-top:10px">
+                                <option class="black-text" value="" disabled>Choose Kitchen</option>
+                                <option class="black-text" value="All" selected>All</option>
+                                <option class="black-text" v-for="k in kitchens" :value="k" v-bind:key="k">{{k}}</option>
+                            </select>
+                        </li>
+                    </ul>
                     <div class="brand-logo center">
                     <ul>
-                        <li v-if="activeTab!='InProgress'"><a v-on:click="changeTab('InProgress')">Active</a></li>
-                        <li class="active" v-if="activeTab=='InProgress'"><a v-on:click="changeTab('InProgress')">Active</a></li>
-                        <li v-if="activeTab!='Completed'"><a v-on:click="changeTab('Completed')">Completed</a></li>
-                        <li class="active" v-if="activeTab=='Completed'"><a v-on:click="changeTab('Completed')">Completed</a></li>
+                        <li v-if="activeTab!='InProgress'"><a v-on:click="changeTab('InProgress')">Active<span class="new badge blue" data-badge-caption="" style="border-radius: 5px 20px 5px;">4</span></a></li>
+                        <li class="active" v-if="activeTab=='InProgress'"><a v-on:click="changeTab('InProgress')">Active<span class="new badge blue" data-badge-caption="" style="border-radius: 5px 20px 5px;">4</span></a></li>
+                        <li v-if="activeTab!='Completed'"><a v-on:click="changeTab('Completed')">Completed<span class="new badge blue" data-badge-caption="" style="border-radius: 5px 20px 5px;">4</span></a></li>
+                        <li class="active" v-if="activeTab=='Completed'"><a v-on:click="changeTab('Completed')">Completed<span class="new badge blue" data-badge-caption="" style="border-radius: 5px 20px 5px;">4</span></a></li>
                     </ul>
                     </div>
-                    <ul class="right">
-                    <li>
-                            <select class="black-text" style="display:block;background-color: white;" v-model="kitchenSelect" v-on:change="filterKitchen()">
-                                <option value="All" selected>All</option>
-                                <option v-for="k in kitchens" :value="k" v-bind:key="k">{{k}}</option>
+                    <ul class="right">  
+                        <li>
+                            <select class="browser-default white-text transparent" v-model="cardsNo" style="margin-top:10px;">
+                                <option disabled selected>Cards Per Page</option>
+                                <option class="black-text" value="col l4">6 Cards</option>
+                                <option class="black-text" value="col l3">8 Cards</option>
                             </select>
-                    </li>
-                    <li>
-                        <select class="black-text" style="display:block;background-color: white;" v-model="cardsNo">
-                            <option value="col l4">6</option><option value="col l3">8</option>
-                        </select>
-                    </li>
+                        </li>
+                        <li>
+                            <a class="waves-effect waves-light btn grey darken-4" v-on:click="logout()">
+                                <i class="material-icons">close</i>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>
@@ -51,7 +62,8 @@ export default {
                 cardsNo : 'col l3',
                 kitchenSelect : 'All',
                 activeTab : 'InProgress',
-                lengthOrders : 0
+                notify : false,
+                itemsCount : 0
             }
         },
     methods:{
@@ -69,6 +81,9 @@ export default {
                     }
                 )
         },
+        toggleNotification: function(){
+            this.notify = !this.notify
+        },
         filterKitchen : function(){
             if(this.kitchenSelect == 'All'){
                 this.getAllOrdersData()
@@ -76,12 +91,16 @@ export default {
             else{
                 this.getAllOrdersData()
                 this.orders.forEach(order => {
-                    order.orders.forEach(item => {
+                    order.orders.forEach((item,index) => {
                         if(!(this.kitchenSelect === item.kitchen)){
-                            let index = order.orders.indexOf(item)
-                            console.log(index)
-                            let a = order.orders.pop(index)
-                            console.log(a)
+                            order.orders.splice(index,1)
+                        }
+                    })
+                })
+                this.orders.forEach(order => {
+                    order.completed.forEach((item,index) => {
+                        if(!(this.kitchenSelect === item.kitchen)){
+                            order.completed.splice(index,1)
                         }
                     })
                 })
@@ -92,6 +111,7 @@ export default {
             database.on('value', snapshot => {
                 this.orders = []
                 let orderIDS = []
+                let tempItemsCount = 0
                 snapshot.forEach(diners => {
                     diners.forEach(tables => {
                         tables.forEach(table => {
@@ -99,7 +119,7 @@ export default {
                                 if(table.val().Status.toLowerCase() === "inprogress"){
                                     let orderedItems = []
                                     let completedItems = []
-                                    table.child('cart').child('items').forEach(item => {
+                                    table.child('Cart').child('items').forEach(item => {
                                         if(item.val().status.toLowerCase() === "ordered"){
                                             var itemDetails = {
                                                 'customization': item.val().customizationlist,
@@ -108,8 +128,7 @@ export default {
                                                 'key': item.val().item_id,
                                                 'time': item.val().ordered_time,
                                                 'kitchen': item.val().kitchen,
-                                                'order_no': item.key,
-                                                'bgColor' : 'background-color: white'
+                                                'order_no': item.key
                                             }
                                             orderedItems.unshift(itemDetails)
                                         }
@@ -121,12 +140,14 @@ export default {
                                                 'key': item.val().item_id,
                                                 'time': item.val().ordered_time,
                                                 'kitchen': item.val().kitchen,
-                                                'order_no': item.key,
-                                                'bgColor' : 'background-color: green'
+                                                'order_no': item.key
                                             }
                                             completedItems.push(itemDetails)
                                         }
                                     })
+                                    //Count Items to play sound
+                                    tempItemsCount = tempItemsCount + orderedItems.length + completedItems.length
+                                    //See if tables Are Merged
                                     if(!orderIDS.includes(table.val().OrderID)){
                                         let tableID = ""
                                         if(table.hasChild('MergedList')){
@@ -146,7 +167,7 @@ export default {
                                                         'OrderKey' : table.val().OrderID,
                                                         'orders':orderedItems,
                                                         'completed' : completedItems,
-                                                        'special' : table.val().cart.special_instruction,
+                                                        'special' : table.val().Cart.special_instruction,
                                                         'kdsStatus' : table.val().KdsStatus})
                                         orderIDS.push(table.val().OrderID)
                                     }
@@ -155,10 +176,19 @@ export default {
                         })
                     })
                 })
-                if(this.lengthOrders < this.orders.length){
-                    console.log("Play Sound")
-                    this.lengthOrders = this.orders.length
-                }             
+                //Playing sound if no of items increases
+                if(this.itemsCount > tempItemsCount){
+                    this.itemsCount = tempItemsCount
+                    tempItemsCount = 0
+                } 
+                else if(this.itemsCount < tempItemsCount){
+                    let audio = new Audio(require('../assets/newOrder.mp3'))
+                    if(this.notify){
+                        let play = audio.play()
+                    }
+                    this.itemsCount = tempItemsCount
+                    tempItemsCount = 0
+                }         
             },
             err => {
                 console.log(err.message)
@@ -173,6 +203,9 @@ export default {
     },
     components : {
         Cards
+    },
+    mounted(){
+        M.AutoInit()
     },
     created() {
         //Getting user Location and Kitchen Data
@@ -190,3 +223,13 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.input-group--select__autocomplete {
+    height: 0px !important;
+}
+
+.input-group--select.input-group--focused .input-group--select__autocomplete {
+    height: 30px !important;
+}
+</style>
