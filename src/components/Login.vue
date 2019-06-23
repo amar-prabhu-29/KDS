@@ -1,8 +1,8 @@
 <template>
     <div>
         <nav>
-            <div class="nav-wrapper teal">
-                <router-link to="/" class="brand-logo">KDS</router-link>
+            <div class="nav-wrapper #CB212E">
+                <router-link to="/login" class="brand-logo">KDS</router-link>
             </div>
         </nav>
         <div class="row">
