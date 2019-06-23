@@ -127,6 +127,7 @@ export default {
                                                 'qty': item.val().quantity,
                                                 'key': item.val().item_id,
                                                 'time': item.val().ordered_time,
+                                                'elapsedTime' : 0,
                                                 'kitchen': item.val().kitchen,
                                                 'order_no': item.key
                                             }
@@ -168,7 +169,8 @@ export default {
                                                         'orders':orderedItems,
                                                         'completed' : completedItems,
                                                         'special' : table.val().Cart.special_instruction,
-                                                        'kdsStatus' : table.val().KdsStatus})
+                                                        'kdsStatus' : table.val().KdsStatus,
+                                                        'time': table.val().TimeStamp})
                                         orderIDS.push(table.val().OrderID)
                                     }
                                 }
