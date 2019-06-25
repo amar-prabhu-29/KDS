@@ -1,10 +1,11 @@
 <template>
     <div>
         <nav>
-            <div class="nav-wrapper #CB212E">
+            <div class="nav-wrapper" style="background-color: #2A2A2A">
                 <router-link to="/login" class="brand-logo">KDS</router-link>
             </div>
         </nav>
+        <br>
         <div class="row">
             <div class="col l3"></div>
             <div class="col l6 m12 s12">
