@@ -2,7 +2,7 @@
     <div>
         <div class="navbar-fixed">
             <nav>
-                <div class="nav-wrapper #CB212E">
+                <div class="nav-wrapper" style="background-color: #2A2A2A">
                     <ul class="left">
                         <li v-if="notify"><a class="waves-effect waves-light btn grey darken-4" v-on:click="toggleNotification()"><i class="material-icons">volume_up</i></a></li>
                         <li v-if="!notify"><a class="waves-effect waves-light btn grey darken-4" v-on:click="toggleNotification()"><i class="material-icons">volume_off</i></a></li>
@@ -16,10 +16,10 @@
                     </ul>
                     <div class="brand-logo center">
                     <ul>
-                        <li v-if="activeTab!='InProgress'"><a v-on:click="changeTab('InProgress')">Active<span class="new badge blue" data-badge-caption="" style="border-radius: 5px 20px 5px;">4</span></a></li>
-                        <li class="active" v-if="activeTab=='InProgress'"><a v-on:click="changeTab('InProgress')">Active<span class="new badge blue" data-badge-caption="" style="border-radius: 5px 20px 5px;">4</span></a></li>
-                        <li v-if="activeTab!='Completed'"><a v-on:click="changeTab('Completed')">Completed<span class="new badge blue" data-badge-caption="" style="border-radius: 5px 20px 5px;">4</span></a></li>
-                        <li class="active" v-if="activeTab=='Completed'"><a v-on:click="changeTab('Completed')">Completed<span class="new badge blue" data-badge-caption="" style="border-radius: 5px 20px 5px;">4</span></a></li>
+                        <li v-if="activeTab!='InProgress'"><a v-on:click="changeTab('InProgress')">Active<span class="new badge blue" data-badge-caption="" style="border-radius: 5px 20px 5px;">{{activeCount}}</span></a></li>
+                        <li class="active" v-if="activeTab=='InProgress'"><a v-on:click="changeTab('InProgress')">Active<span class="new badge blue" data-badge-caption="" style="border-radius: 5px 20px 5px;">{{activeCount}}</span></a></li>
+                        <li v-if="activeTab!='Completed'"><a v-on:click="changeTab('Completed')">Completed<span class="new badge blue" data-badge-caption="" style="border-radius: 5px 20px 5px;">{{completedCount}}</span></a></li>
+                        <li class="active" v-if="activeTab=='Completed'"><a v-on:click="changeTab('Completed')">Completed<span class="new badge blue" data-badge-caption="" style="border-radius: 5px 20px 5px;">{{completedCount}}</span></a></li>
                     </ul>
                     </div>
                     <ul class="right">  
@@ -63,7 +63,9 @@ export default {
                 kitchenSelect : 'All',
                 activeTab : 'InProgress',
                 notify : false,
-                itemsCount : 0
+                itemsCount : 0,
+                activeCount : 0,
+                completedCount : 0
             }
         },
     methods:{
@@ -84,34 +86,14 @@ export default {
         toggleNotification: function(){
             this.notify = !this.notify
         },
-        filterKitchen : function(){
-            if(this.kitchenSelect == 'All'){
-                this.getAllOrdersData()
-            }
-            else{
-                this.getAllOrdersData()
-                this.orders.forEach(order => {
-                    order.orders.forEach((item,index) => {
-                        if(!(this.kitchenSelect === item.kitchen)){
-                            order.orders.splice(index,1)
-                        }
-                    })
-                })
-                this.orders.forEach(order => {
-                    order.completed.forEach((item,index) => {
-                        if(!(this.kitchenSelect === item.kitchen)){
-                            order.completed.splice(index,1)
-                        }
-                    })
-                })
-            }
-        },
         getAllOrdersData : function(){
             let database = firebaseApp.database().ref('Location/'+this.location+'/')
             database.on('value', snapshot => {
                 this.orders = []
                 let orderIDS = []
                 let tempItemsCount = 0
+                this.activeCount = 0
+                this.completedCount = 0
                 snapshot.forEach(diners => {
                     diners.forEach(tables => {
                         tables.forEach(table => {
@@ -129,7 +111,8 @@ export default {
                                                 'time': item.val().ordered_time,
                                                 'elapsedTime' : 0,
                                                 'kitchen': item.val().kitchen,
-                                                'order_no': item.key
+                                                'order_no': item.key,
+                                                'colorCode' : 'background-color: white'
                                             }
                                             orderedItems.unshift(itemDetails)
                                         }
@@ -162,16 +145,22 @@ export default {
                                         tableID = tableID.substring(1);
                                         this.orders.push({'diner':diners.key, 
                                                         'table':tableID,
-                                                        'guests':table.val().NoOfGuests,
+                                                        'guests':table.val().NoOfGuest,
                                                         'steward':table.val().StewardName,
                                                         'OrderID':table.val().OrderID,
                                                         'OrderKey' : table.val().OrderID,
-                                                        'orders':orderedItems,
+                                                        'orders': orderedItems,
                                                         'completed' : completedItems,
                                                         'special' : table.val().Cart.special_instruction,
                                                         'kdsStatus' : table.val().KdsStatus,
                                                         'time': table.val().TimeStamp})
                                         orderIDS.push(table.val().OrderID)
+                                        if(table.val().KdsStatus.toLowerCase() === 'completed'){
+                                            this.completedCount+=1
+                                        }
+                                        else if(table.val().KdsStatus.toLowerCase() === 'inprogress' && (orderedItems.length > 0 || completedItems.length > 0)){
+                                            this.activeCount+=1
+                                        }
                                     }
                                 }
                             }
