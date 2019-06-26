@@ -7,11 +7,18 @@
                         <li v-if="notify"><a class="waves-effect waves-light btn grey darken-4" v-on:click="toggleNotification()"><i class="material-icons">volume_up</i></a></li>
                         <li v-if="!notify"><a class="waves-effect waves-light btn grey darken-4" v-on:click="toggleNotification()"><i class="material-icons">volume_off</i></a></li>
                         <li>
-                            <select class="browser-default white-text transparent" v-model="kitchenSelect" v-on:change="filterKitchen()" style="margin-top:10px">
-                                <option class="black-text" value="" disabled>Choose Kitchen</option>
-                                <option class="black-text" value="All" selected>All</option>
-                                <option class="black-text" v-for="k in kitchens" :value="k" v-bind:key="k">{{k}}</option>
-                            </select>
+                            <div style="unset: all" class="multiselect">
+                                <div class="selectBox" v-on:click="showCheckboxes()">
+                                    <select class="browser-default" style="background:transparent; color: white;margin-top:10px;">
+                                        <option>Select Kitchen</option>
+                                    </select>
+                                    <div class="overSelect"></div>
+                                </div>
+                                <div id="checkboxes" style="background-color: white; line-height: 25px !important;font-size:22px;color:black !important">
+                                    <label><input type="checkbox" value="All" v-model="kitchenSelect" checked><span style="margin-left:3px">All</span></label>
+                                    <label v-for="kitchen in kitchens" v-bind:key="kitchen"><input type="checkbox" :value="kitchen" v-model="kitchenSelect"/><span style="margin-left:3px">{{kitchen}}</span></label>
+                                </div>
+                            </div>
                         </li>
                     </ul>
                     <div class="brand-logo center">
@@ -39,7 +46,7 @@
                 </div>
             </nav>
         </div>
-        <Cards v-if="!loading" v-bind:orders="orders" v-bind:cardsNo="cardsNo" v-bind:location="location" v-bind:activeTab="activeTab"></Cards>
+        <Cards v-if="!loading" v-bind:orders="orders" v-bind:cardsNo="cardsNo" v-bind:location="location" v-bind:activeTab="activeTab" v-bind:selectedKitchens="kitchenSelect"></Cards>
     </div>
 
 </template>
@@ -48,8 +55,10 @@
 import firebase from 'firebase'
 import firebaseApp from './firebaseInit'
 import Cards from './Cards'
+import Multiselect from 'vue-multiselect'
 
 export default {
+    components: { Multiselect },
     name: 'dashboard',
     data: 
         function() {
@@ -60,12 +69,13 @@ export default {
                 loading : true,
                 currentUser : false,
                 cardsNo : 'col l3',
-                kitchenSelect : 'All',
+                kitchenSelect : ['All'],
                 activeTab : 'InProgress',
                 notify : false,
                 itemsCount : 0,
                 activeCount : 0,
-                completedCount : 0
+                completedCount : 0,
+                expanded : false
             }
         },
     methods:{
@@ -153,7 +163,8 @@ export default {
                                                         'completed' : completedItems,
                                                         'special' : table.val().Cart.special_instruction,
                                                         'kdsStatus' : table.val().KdsStatus,
-                                                        'time': table.val().TimeStamp})
+                                                        'time': table.val().TimeStamp,
+                                                        'isKitchen' : true})
                                         orderIDS.push(table.val().OrderID)
                                         if(table.val().KdsStatus.toLowerCase() === 'completed'){
                                             this.completedCount+=1
@@ -190,6 +201,46 @@ export default {
         logout: function(){
             firebase.auth().signOut()
             this.$router.go('/login')
+        },
+        showCheckboxes: function() {
+            let checkboxes = document.getElementById("checkboxes");
+            if (!this.expanded) {
+                checkboxes.style.display = "block";
+                this.expanded = true;
+            } 
+            else {
+                checkboxes.style.display = "none";
+                this.expanded = false;
+            }
+        }
+    },
+    watch : {
+        kitchenSelect : function(){
+            if(!this.kitchenSelect.includes('All')){
+                    this.orders.forEach(order => {
+                        let flag=0
+                        order.orders.forEach(item => {
+                            if(this.kitchenSelect.includes(item.kitchen)){
+                                order.isKitchen = true
+                                flag=1
+                            }
+                        })
+                        order.completed.forEach(item => {
+                            if(this.kitchenSelect.includes(item.kitchen)){
+                                order.isKitchen = true
+                                flag=1
+                            }
+                        })
+                        if(flag==0){
+                            order.isKitchen = false
+                        }
+                    })
+                }
+            else{
+                this.orders.forEach(order => {
+                    order.isKitchen = true
+                })
+            }
         }
     },
     components : {
@@ -216,11 +267,37 @@ export default {
 </script>
 
 <style scoped>
-.input-group--select__autocomplete {
-    height: 0px !important;
+.multiselect {
+  width: 200px;
 }
 
-.input-group--select.input-group--focused .input-group--select__autocomplete {
-    height: 30px !important;
+.selectBox {
+  position: relative;
+}
+
+.selectBox select {
+  width: 100%;
+}
+
+.overSelect {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+#checkboxes {
+  display: none;
+  border: 1px #dadada solid;
+}
+
+#checkboxes label {
+  display: block;
+  color:black;
+}
+
+#checkboxes label:hover {
+  background-color: #1e90ff;
 }
 </style>

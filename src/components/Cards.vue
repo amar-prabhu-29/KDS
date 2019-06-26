@@ -1,6 +1,6 @@
 <template>
     <div class="row">
-        <div :class="cardsNo" v-for="order in orders" v-if="order.kdsStatus == activeTab && (order.orders.length != 0 || order.completed.length != 0)" v-bind:key="order.OrderKey" style="height: 44vh">
+        <div :class="cardsNo" v-for="order in orders" v-if="order.isKitchen && order.kdsStatus == activeTab && (order.orders.length != 0 || order.completed.length != 0)" v-bind:key="order.OrderKey" style="height: 44vh">
             <div class="card" style="border-radius:3%;background-color: #3A81FD" >
                 <div class="card-content white-text" style="padding:0">
                     <span class="card-title" style="font-size:15px;line-height: 22.5px">
@@ -14,12 +14,12 @@
                     </span>
                         <ul class="collection black-text" style="max-height:30vh;overflow:auto;">
                             <li class="white" v-if="order.special" style="border-bottom:1px solid black"><marquee><p>{{order.special}}</p></marquee></li>
-                            <li class="collection-item" v-for="item in order.orders" v-if="kitchenFiltered.includes(item.kitchen)" v-on:click="itemComplete(order.diner, order.table, item.order_no)" :style="item.colorCode">
+                            <li class="collection-item" v-for="item in order.orders" v-if="selectedKitchens.includes(item.kitchen) || selectedKitchens.includes('All')" v-on:click="itemComplete(order.diner, order.table, item.order_no)" :style="item.colorCode">
                                 <b>{{item.qty}} X {{item.name}}<span style="float:right">{{item.elapsedTime}}</span></b>
                                 <br>
                                 <small style="white-space: pre;color: #007AFF;">{{item.customization | replacePipe}}</small>
                             </li>
-                            <li class="collection-item" v-for="item in order.completed" v-if="kitchenFiltered.includes(item.kitchen)" style="background-color: #2FB866">
+                            <li class="collection-item" v-for="item in order.completed" v-if="selectedKitchens.includes(item.kitchen) || selectedKitchens.includes('All')" style="background-color: #2FB866">
                                 <b style="color:white">{{item.qty}} X {{item.name}}<span style="float:right">Completed</span></b>
                                 <br>
                                 <small style="white-space: pre-wrap;color:white;">{{item.customization | replacePipe}}</small>
@@ -38,10 +38,10 @@ import { setInterval, clearInterval } from 'timers';
 
 export default {
     name: 'Cards',
-    props: ['orders','cardsNo','location','activeTab'],
+    props: ['orders','cardsNo','location','activeTab','selectedKitchens'],
     data: function(){
         return{
-            kitchenFiltered : ['chinese','main']
+            kitchensFiltered : this.selectedKitchens
         }
     },
     methods:{
