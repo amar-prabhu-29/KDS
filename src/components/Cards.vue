@@ -19,7 +19,7 @@
                                 <br>
                                 <small style="white-space: pre;color: #007AFF;">{{item.customization | replacePipe}}</small>
                             </li>
-                            <li class="collection-item" v-for="item in order.completed" v-if="selectedKitchens.includes(item.kitchen) || selectedKitchens.includes('All')" style="background-color: #2FB866">
+                            <li class="collection-item" v-for="item in order.completed" v-if="selectedKitchens.includes(item.kitchen) || selectedKitchens.includes('All')" v-on:click="itemRecalled(order.diner, order.table, item.order_no)"  style="background-color: #2FB866">
                                 <b style="color:white">{{item.qty}} X {{item.name}}<span style="float:right">Completed</span></b>
                                 <br>
                                 <small style="white-space: pre-wrap;color:white;">{{item.customization | replacePipe}}</small>
@@ -50,6 +50,14 @@ export default {
             tables.forEach(table => {
                 firebaseApp.database().ref('Location/'+this.location+'/'+diner+'/Tables/'+table+'/Cart/items/'+order_no).update({'status' : "Served"})
                 firebaseApp.database().ref('Location/'+this.location+'/'+diner+'/Tables/'+table).update({'TimeStamp' : new Date().getTime()})
+            })      
+        },
+        itemRecalled: function(diner, table, order_no){
+            let tables = table.split(',')
+            tables.forEach(table => {
+                firebaseApp.database().ref('Location/'+this.location+'/'+diner+'/Tables/'+table+'/Cart/items/'+order_no).update({'status' : "Ordered"})
+                firebaseApp.database().ref('Location/'+this.location+'/'+diner+'/Tables/'+table).update({'TimeStamp' : new Date().getTime()})
+                firebaseApp.database().ref('Location/'+this.location+'/'+diner+'/Tables/'+table).update({'KdsStatus' : 'InProgress'}) 
             })      
         },
         changeKDS: function(diner,table,status){
