@@ -10,7 +10,7 @@
                             <div style="unset: all" class="multiselect">
                                 <div class="selectBox" v-on:click="showCheckboxes()">
                                     <select class="browser-default" style="background:transparent; color: white;margin-top:10px;">
-                                        <option>Select Kitchen</option>
+                                        <option>{{kitchenSelect | beautifyKitchens}}</option>
                                     </select>
                                     <div class="overSelect"></div>
                                 </div>
@@ -246,6 +246,20 @@ export default {
     },
     components : {
         Cards
+    },
+    filters : {
+        beautifyKitchens : (kitchens) => {
+            let dispKitchen = ''
+            if(kitchens.length == 0){
+                dispKitchen = ',Select Kitchen'
+            }
+            else{
+                kitchens.forEach(kitchen => {
+                    dispKitchen = dispKitchen + "," + kitchen
+                })
+            }
+            return dispKitchen.substring(1)
+        }
     },
     mounted(){
         M.AutoInit()
