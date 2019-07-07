@@ -127,6 +127,10 @@ export default {
 </script>
 
 <style scoped>
+.reducedFont{
+    font-size:10px
+}
+
 /* width */
 ::-webkit-scrollbar {
   background-color: aliceblue;

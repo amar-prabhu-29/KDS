@@ -35,7 +35,7 @@
                                 <option disabled selected>Cards Per Page</option>
                                 <option class="black-text" value="col l4">6 Cards</option>
                                 <option class="black-text" value="col l3">8 Cards</option>
-                                <option class="black-text" value="col l2">12 Cards</option>
+                                <option class="black-text" value="col l2 reducedFont">12 Cards</option>
                             </select>
                         </li>
                         <li>
