@@ -61,8 +61,11 @@ export default {
             })      
         },
         changeKDS: function(diner,table,status){
-            firebaseApp.database().ref('Location/'+this.location+'/'+diner+'/Tables/'+table).update({'TimeStamp' : new Date().getTime()})
-            firebaseApp.database().ref('Location/'+this.location+'/'+diner+'/Tables/'+table).update({'KdsStatus' : status})   
+            let tables = table.split(',')
+            tables.forEach(table => {
+                firebaseApp.database().ref('Location/'+this.location+'/'+diner+'/Tables/'+table).update({'TimeStamp' : new Date().getTime()})
+                firebaseApp.database().ref('Location/'+this.location+'/'+diner+'/Tables/'+table).update({'KdsStatus' : status})   
+            })
         },
     },
     mounted(){
