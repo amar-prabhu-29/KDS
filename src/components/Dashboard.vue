@@ -16,7 +16,9 @@
                                 </div>
                                 <div id="checkboxes" style="background-color: white; line-height: 25px !important;font-size:22px;color:black !important">
                                     <label><input type="checkbox" value="All" v-model="kitchenSelect" checked><span style="margin-left:3px">All</span></label>
-                                    <label v-for="kitchen in kitchens" v-bind:key="kitchen"><input type="checkbox" :value="kitchen" v-model="kitchenSelect"/><span style="margin-left:3px">{{kitchen}}</span></label>
+                                    <span v-if="!kitchenSelect.includes('All')">
+                                        <label v-for="kitchen in kitchens" v-bind:key="kitchen"><input type="checkbox" :value="kitchen" v-model="kitchenSelect"/><span style="margin-left:3px">{{kitchen}}</span></label>
+                                    </span>
                                 </div>
                             </div>
                         </li>
